@@ -16,24 +16,37 @@ public class ThirdPersonCamera : MonoBehaviour
 
     private float yaw;
     private float pitch = 15f;
+    private bool cursorLocked = true;
 
     void Start()
     {
         yaw = transform.eulerAngles.y;
+        LockCursor();
+    }
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UnlockCursor();
+        }
+
+        if (Input.GetMouseButtonDown(0) && !cursorLocked)
+        {
+            LockCursor();
+        }
     }
 
     void LateUpdate()
     {
         if (target == null) return;
 
-        // Mouse Rotation
-        yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-        pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        if (cursorLocked)
+        {
+            yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+            pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        }
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
 
@@ -47,9 +60,22 @@ public class ThirdPersonCamera : MonoBehaviour
         transform.LookAt(targetPosition);
     }
 
-    void OnDisable()
+    void LockCursor()
     {
+        cursorLocked = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void UnlockCursor()
+    {
+        cursorLocked = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    void OnDisable()
+    {
+        UnlockCursor();
     }
 }
